@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Classification</title>
+    <style>
+      body {
+        background-color: #f7f9fc;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        height: 100vh;
+        justify-content: center;
+        align-items: center;
+      }
+      .container {
+        display: flex;
+        width: 90%;
+        max-width: 1200px;
+        background-color: #ffffff;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .banner {
+        background-color: #4a4e69;
+        color: #ffffff;
+        width: 350px;
+        padding: 20px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .banner .btn {
+        background-color: #9a8c98;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+        font-size: 14px;
+        margin: 10px 0;
+        cursor: pointer;
+        border-radius: 8px;
+      }
+      .banner .btn:disabled {
+        background-color: #bdbdbd;
+        cursor: not-allowed;
+      }
+      .banner .dataframe-container {
+        width: 100%;
+        margin-top: 20px;
+        overflow-x: auto;
+      }
+      .content {
+        flex: 1;
+        padding: 20px;
+        text-align: center;
+      }
+      .content h1 {
+        color: #4a4e69;
+        font-size: 24px; /* Smaller font size for the title */
+      }
+      .content p {
+        margin-top: 10px;
+        color: #333333;
+      }
+      .image-container {
+        margin-top: 20px;
+      }
+      .image-container h2,
+      .dataframe-container h2 {
+        font-size: 16px; /* Smaller font size for titles */
+        color: #4a4e69;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+        border: 2px solid #4a4e69;
+        border-radius: 10px;
+      }
+      table.dataframe {
+        width: 100%;
+        max-width: 200px; /* Smaller max-width for the DataFrame */
+        border-collapse: collapse;
+        margin: 0 auto;
+        font-size: 12px;
+        color: #ffffff;
+      }
+      table.dataframe th,
+      table.dataframe td {
+        border: 1px solid #dddddd;
+        text-align: center;
+        padding: 4px;
+      }
+      table.dataframe th {
+        background-color: #22223b;
+        color: white;
+      }
+      table.dataframe tr:nth-child(even) {
+        background-color: #4a4e69;
+      }
+      table.dataframe tr:nth-child(odd) {
+        background-color: #9a8c98;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="banner">
+        <button class="btn" id="generate-btn">Generate Random Image</button>
+        <button class="btn" id="predict-btn" disabled>Predict</button>
+        <div class="dataframe-container" id="dataframe-container"></div>
+      </div>
+      <div class="content">
+        <h1>Welcome to the Image Classification Project</h1>
+        <p>Generate a random image and predict its class using our model</p>
+        <div class="image-container" id="image-container"></div>
+      </div>
+    </div>
+    <script>
+      document
+        .getElementById("generate-btn")
+        .addEventListener("click", function () {
+          fetch("/generate_image")
+            .then((response) => response.json())
+            .then((data) => {
+              const imageContainer = document.getElementById("image-container");
+              imageContainer.innerHTML = `
+                        <h2>Class: ${data.image_class}</h2>
+                        <img src="${data.image_url}" alt="Random Image">
+                    `;
+              document.getElementById("predict-btn").disabled = false;
+              document.getElementById("predict-btn").dataset.imagePath =
+                data.image_url;
+              document.getElementById("dataframe-container").innerHTML = "";
+              document.querySelector(".banner").style.width = "400px"; // Make the banner larger after generating an image
+            });
+        });
+
+      document
+        .getElementById("predict-btn")
+        .addEventListener("click", function () {
+          const imagePath = this.dataset.imagePath;
+          const formData = new FormData();
+          formData.append("image_path", imagePath);
+
+          fetch("/predict", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              const dataframeContainer = document.getElementById(
+                "dataframe-container"
+              );
+              dataframeContainer.innerHTML = `
+                        <h2>Prediction: ${data.prediction}</h2>
+                        ${data.dataframe}
+                    `;
+            });
+        });
+    </script>
+  </body>
+</html>
