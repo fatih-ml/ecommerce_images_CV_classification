@@ -33,7 +33,7 @@ else:
     print("Model already exists. Skipping download.")
 
 # Load our model (model***.h5 file needs to be in the same directory as app.py)
-model = load_model("mobilenetv2_18K_model.h5")
+model = load_model(MODEL_PATH)
 
 
 # Define a route for the default URL, which loads the index page
