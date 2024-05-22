@@ -1,8 +1,10 @@
-__pycache__
 *.pyc
 *.pyo
 *.pyd
-*.db
-*.sqlite3
-.env
-venv/
+__pycache__
+.dockerignore
+Dockerfile
+README.md
+Procfile
+runtime.txt
+.venv

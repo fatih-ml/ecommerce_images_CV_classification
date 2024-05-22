@@ -1,29 +1,23 @@
-# Stage 1: Build
-FROM python:3.11-slim AS build
-
-WORKDIR /app
-
-# Install build dependencies
-RUN apt-get update && apt-get install -y build-essential
-
-# Copy and install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Remove build dependencies
-RUN apt-get remove -y build-essential && apt-get autoremove -y && apt-get clean
-
-# Copy the application code
-COPY . .
-
-# Stage 2: Final Image
+# Use an official Python runtime as a parent image
 FROM python:3.11-slim
 
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy only the necessary files from the build stage
-COPY --from=build /app /app
+# Copy the requirements file into the container at /app
+COPY requirements.txt .
 
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the working directory contents into the container at /app
+COPY . .
+
+# Expose port 5000 for the Flask app to run on
 EXPOSE 5000
 
+# Define environment variable to ensure Python outputs everything to the terminal without buffering it.
+ENV PYTHONUNBUFFERED=1
+
+# Run app.py when the container launches
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
