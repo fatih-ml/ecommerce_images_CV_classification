@@ -1,23 +1,29 @@
-# Use the official Python image from the Docker Hub
-FROM python:3.11-slim
+# Stage 1: Build
+FROM python:3.11-slim AS build
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy the requirements file to the container
-COPY requirements.txt .
+# Install build dependencies
+RUN apt-get update && apt-get install -y build-essential
 
-# Install the dependencies
+# Copy and install dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire project to the container
+# Remove build dependencies
+RUN apt-get remove -y build-essential && apt-get autoremove -y && apt-get clean
+
+# Copy the application code
 COPY . .
 
-# Set environment variables (if any)
-# ENV VAR_NAME=value
+# Stage 2: Final Image
+FROM python:3.11-slim
 
-# Expose the port the app runs on
+WORKDIR /app
+
+# Copy only the necessary files from the build stage
+COPY --from=build /app /app
+
 EXPOSE 5000
 
-# Command to run the app
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
